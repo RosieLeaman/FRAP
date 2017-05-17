@@ -57,6 +57,6 @@ for i=1:1
     [sortedTimes,ind] = sort(times);
     sortedImages = images(ind);
     
-    % now that the images are sorted we can read in 
+    % now that the images are sorted we can do the FRAP!
 end
 
