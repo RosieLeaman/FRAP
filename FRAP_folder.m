@@ -16,13 +16,15 @@ folder = uigetdir('','Choose image folder');
 % these are microscopy files
 fileList = dir(fullfile(folder,'*.lsm'));
 
-% find out how many FRAP sets there are
+% % find out how many FRAP sets there are
+% 
+% FRAPsets = input('How many sets of images are there?\n');
+% 
+% % find out how many images per sets there are
+% 
+% numImages = input('How many time points are there (including the prebleach image)?\n');
 
-FRAPsets = input('How many sets of images are there?\n');
-
-% find out how many images per sets there are
-
-numImages = input('How many time points are there (including the prebleach image)?\n');
+[FRAPsets,numImages] = getNumbers();
 
 % create storage for the signals and times used
 
