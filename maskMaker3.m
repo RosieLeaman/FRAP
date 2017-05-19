@@ -143,7 +143,7 @@ for i=3:length(images)
             
             % cross this mask with the nonbleach
 
-            cross = correct.*thisCell;
+            cross = correct.*thisCell;      
             
             count = nnz(cross);
             

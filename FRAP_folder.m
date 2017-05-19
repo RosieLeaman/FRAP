@@ -8,9 +8,9 @@
 % it does not matter if the images are aligned or not, this will be dealt
 % with
 
-function FRAP_folder(folder)
+function FRAP_folder()
 % replace folder input with uigetdir
-% folder = uigetdir('','Choose image folder');
+folder = uigetdir('','Choose image folder');
 
 % read in the names of all files ending in .lsm
 % these are microscopy files
@@ -38,7 +38,7 @@ driftYes = 1;
 
 % this will be turned into a checkbox at some point for input 
 
-for i=1:2
+for i=1:FRAPsets
     disp(['Working on set ',num2str(i)])
     % loop through and find all the right files
     % and save the images and timestamps
@@ -105,4 +105,4 @@ end
 figure;plot(time,avg,'Linewidth',3);grid on;grid minor;set(gca,'FontSize',20);hold on
 %errorbar(preciseTimes(1:6),avgSignals(1:6),stdev(1:6),'kx','Linewidth',2); 
 xlabel('Time postbleach (s)');ylabel('Normalised intensity');
-text(307,0.95,['n=',num2str(numImages)],'FontSize',20,'Color','black');
+text(307,0.95,['n=',num2str(FRAPsets)],'FontSize',20,'Color','black');
