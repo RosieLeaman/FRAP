@@ -33,10 +33,12 @@ timestamps = zeros(FRAPsets,numImages);
 
 % determine how much information we want to display
 
-plotMasksYes = 1; % plots a summary of masks for bleached and non-bleached regions
-plotRecoveryYes = 1; % plots a recovery curve for each image set
-detailYes = 0; % plots almost every single mask used (for debugging only)
-driftYes = 1;
+[plotRecoveryYes,averageRecoveryYes,driftYes,plotMasksYes,detailYes] = checkboxes()
+
+% plotMasksYes = 1; % plots a summary of masks for bleached and non-bleached regions
+% plotRecoveryYes = 1; % plots a recovery curve for each image set
+% detailYes = 0; % plots almost every single mask used (for debugging only)
+% driftYes = 1;
 
 % this will be turned into a checkbox at some point for input 
 
@@ -89,22 +91,25 @@ for i=1:FRAPsets
     timestamps(i,:) = relTimes;
 end
 
-% calculate the average recovery curve and plot it
 
-% later images are often taken at not quite the same time
-% choose the smallest of these to be our 'precise times'
-% we pick the smallest as then that timepoint is within all the measured
-% time points across all curves, so no extrapolation only interpolation
+if(averageRecoveryYes)
+    % calculate the average recovery curve and plot it
 
-%preciseTimes = [min(times(:,1)),min(times(:,2)),min(times(:,3)),min(times(:,4)),min(times(:,5)),min(times(:,6)),min(times(:,7)),min(times(:,8))];
+    % later images are often taken at not quite the same time
+    % choose the smallest of these to be our 'precise times'
+    % we pick the smallest as then that timepoint is within all the measured
+    % time points across all curves, so no extrapolation only interpolation
 
-% calculate the average recovery curve
-[avg,time] = calcAverage(signals,timestamps);
+    %preciseTimes = [min(times(:,1)),min(times(:,2)),min(times(:,3)),min(times(:,4)),min(times(:,5)),min(times(:,6)),min(times(:,7)),min(times(:,8))];
 
-% find the value on the average curve at that timepoint
-%avgSignals = interp1(time,avg,preciseTimes);
+    % calculate the average recovery curve
+    [avg,time] = calcAverage(signals,timestamps);
 
-figure;plot(time,avg,'Linewidth',3);grid on;grid minor;set(gca,'FontSize',20);hold on
-%errorbar(preciseTimes(1:6),avgSignals(1:6),stdev(1:6),'kx','Linewidth',2); 
-xlabel('Time postbleach (s)');ylabel('Normalised intensity');
-text(307,0.95,['n=',num2str(FRAPsets)],'FontSize',20,'Color','black');
+    % find the value on the average curve at that timepoint
+    %avgSignals = interp1(time,avg,preciseTimes);
+
+    figure;plot(time,avg,'Linewidth',3);grid on;grid minor;set(gca,'FontSize',20);hold on
+    %errorbar(preciseTimes(1:6),avgSignals(1:6),stdev(1:6),'kx','Linewidth',2); 
+    xlabel('Time postbleach (s)');ylabel('Normalised intensity');
+    text(307,0.95,['n=',num2str(FRAPsets)],'FontSize',20,'Color','black');
+end

@@ -175,7 +175,7 @@ for i=3:length(images)
 end
 
 for i=1:length(drifts)
-    disp(drifts{i})
+    disp(drifts{i});
 end
 
 disp('end maskmaker')
