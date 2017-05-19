@@ -14,7 +14,7 @@
 % maskMaker3 (cleanup,findCorrectCell,threshold2), findCorrectCell (cleanup),
 % cleanup, subplot_tight,calcImmobile
 
-function [signal,immobile,timestamps] = frapv0_3(images,timestamps,plotMasksYes,plotRecoveryYes,detailYes,driftYes)
+function [signal,immobile] = FRAP_main(images,timestamps,plotMasksYes,plotRecoveryYes,detailYes,driftYes)
 
 numImages = length(images);
 
