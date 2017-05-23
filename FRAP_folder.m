@@ -8,7 +8,7 @@
 % it does not matter if the images are aligned or not, this will be dealt
 % with
 
-function FRAP_folder()
+function [avg,time] = FRAP_folder()
 % replace folder input with uigetdir
 folder = uigetdir('','Choose image folder');
 
@@ -77,9 +77,8 @@ for i=1:FRAPsets
     
     [sortedTimes,ind] = sort(times);
     sortedImages = images(ind);
-    
+
     % now that the images are sorted we can do the FRAP!
-    
     signals(i,:) = FRAP_main(sortedImages,sortedTimes,plotMasksYes,plotRecoveryYes,detailYes,driftYes);
     
     % make the times relative to the first time

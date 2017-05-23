@@ -172,6 +172,7 @@ signal(1) = 1;
 
 for i=2:numImages
     signal(i) = (It2(i)/It2(1))*(Tt2(1)/Tt2(i));
+    %signal(i) = (It2(i));
 end
 
 %signal2 = (signal - signal(2))/(signal(1)-signal(2));
