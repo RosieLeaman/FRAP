@@ -1,61 +1,75 @@
 % calculates the avg BG of image I in a random region of the shape of the mask
-% provided.
+% provided, checking that this doesn't overlap with any cells
 % BGmask is a BINARY image of the FRAPed cell
 % cellsMask is a BINARY image of all cells
 % will avoid any cell objects present in cellsMask
 
-function [avg,trans] = randomBG(I,BGmask,cellsMask)
+function [avg,trans] = randomBG(images,BGmask)
 % calculate image size (ASSUMING I is square)
+avg = 'pointless';
 
-imageSize = size(I,1);
-
-% calculate pixels in mask
-
+imageSizeX = size(images{1},2);
+imageSizeY = size(images{1},1);
 numPixels = sum(BGmask(:));
+numImages = numel(images);
 
-% first ensure both these masks are clean, cleanup
+% binarize all the images
 
-BGmask = cleanup(BGmask);
-cellsMask = cleanup(cellsMask);
+masks = cell(size(images));
+for i=1:numImages
+    masks{i} = imbinarize(images{i});
+    masks{i} = cleanup(masks{i}); % clean them up a bit too
+end
 
-% loop until success
+% loop until success OR too many tries
 
 success = 0;
+tries = 0;
 
-while success == 0
+while success == 0 && tries < 50
     % pick a random offset in x and y
-    x = randi([-imageSize,imageSize],1);
-    y = randi([-imageSize,imageSize],1);
+    maxOffsetX = floor(imageSizeX/2);
+    maxOffsetY = floor(imageSizeY/2);
+    
+    x = randi([-maxOffsetX,maxOffsetX],1);
+    y = randi([-maxOffsetY,maxOffsetY],1);
 
     % move the mask
     
     trans = imtranslate(BGmask,[x,y]);
     
+
+    
     % check if it fell off screen
     
     s = sum(trans(:));
     
-    if sum(trans(:))/numPixels > 0.99
-
-        % determine if it intersects with any cells
-        insect = bsxfun(@and,trans,cellsMask);
+    if s/numPixels > 0.99
         
-        if sum(insect(:)) == 0
-            % if no, calculate average and success
+        miniSuccess = 0;
+        for i=1:numImages
+            % determine if it intersects with any cells
+            insect = bsxfun(@and,trans,masks{i});
+
+            if sum(insect(:)) == 0
+                % if no, calculate average and success
+                miniSuccess = miniSuccess + 1;
+                
+            else
+
+            end
+        end
+        
+        if miniSuccess == numImages
             success = 1;
-            
-            J = I;
-            J(~trans)=0;
-            
-            avg = sum(J(:))/s;
         end
     end
+    
+    tries = tries + 1;
 
     % if yes, loop again
 end
 
-% disp(s/numPixels);
-% disp(avg);
-% 
-% figure;imshow(J);
-% figure;imshow(I);
+if tries == 50
+    disp('TOO MANY ATTEMPTS TO FIND A BACKGROUND AREA, PROBABLY TOO SKETCHY DATA')
+end

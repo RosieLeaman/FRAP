@@ -16,6 +16,8 @@ I2 = images{2};
 disp('finding threshold for image 1 and binarising it')
 BW = threshold2(I,I2,detailYes);
 
+
+
 % find reduced threshold for second image
 %disp('finding threshold for image 2')
 % maxPre = double(mean(I(:)));
@@ -34,12 +36,15 @@ if(detailYes)
     figure;imshow(nonbleached);title('nonbleached')
 end
 % subtract the masks to produce bleached region
+% also multiply by correct cell to get rid of floaty background cells
+correct = findCorrectCell(BW,I,I2);
 
 disp('Calculating bleached region')
 
 bleached = BW - nonbleached;
 bleached(bleached < 0)=0;
 bleached = logical(bleached);
+bleached = bleached.*correct; 
 
 if(detailYes)
     figure;imshow(BW);title('cell, pre clean')
@@ -166,7 +171,7 @@ for i=3:length(images)
     % calculate the centre of mass
     
     comp = bwconncomp(chosenMask);
-    centre = regionprops(comp,'Centroid');
+    centre = regionprops(comp,'Centroid')
     
     % calculate drift
     

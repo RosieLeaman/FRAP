@@ -5,14 +5,14 @@ function BW = threshold2(image,postImage,detailYes)
 
 disp('calculating threshold')
 
-avg = mean(image(:)); % calculate avg intensity
+avg = mean(image(:)) % calculate avg intensity
 
-sd = std(double(image(:))); % SD of intensity (double cause type issues)
+sd = std(double(image(:))) % SD of intensity (double cause type issues)
 
 m = max(image(:)); % maximum intensity as we need a proportion
 m2 = 2^16; % potential max
 
-thresh = (double(avg)+20*double(sd))/double(m2); % threshold
+%thresh = (double(avg)+20*double(sd))/double(m2); % threshold
 %thresh = (double(avg)-0.25*double(sd))/double(m2); % threshold
 
 %BW = imbinarize(image,thresh);
@@ -26,8 +26,6 @@ end
 
 BW = imfill(BW,'holes');
 BW = logical(BW);
-
-disp(thresh)
 
 % now we do the second pass
 

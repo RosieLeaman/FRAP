@@ -16,27 +16,53 @@ if n < 2
     return
 end
 
-% create an array to store the ratios in
+% NEW PLAN; find things closest to the centre
+% original plan; find the component that changes intensity the most
+% this breaks when there's a mobile background cell in the prebleach image
+%ratios = zeros(n,1);
 
-ratios = zeros(n,1);
+% find the centroids of the components
+
+s = regionprops(correct,'Centroid');
+
+% calculate image centre
+
+centreY = floor(size(I,1)/2);
+centreX = floor(size(I,2)/2);
+
+smallestDist = (size(I,1)-centreY)^2+(size(I,2)-centreX)^2;
+component = 0;
 
 % if not then loop through the components
 for i=1:n
-    % calculate the ratios of intensities between the initial greyscale
-    % image and prebleach
-    % the component with the smallest ratio is the FRAPed cell
-    comp = CC.PixelIdxList{i};
-    len = length(comp);
+%     % calculate the ratios of intensities between the initial greyscale
+%     % image and prebleach
+%     % the component with the smallest ratio is the FRAPed cell
+%     comp = CC.PixelIdxList{i};
+%     len = length(comp);
+%     
+%     I2avg = sum(I2(comp))/len;
+%     Iavg = sum(I(comp))/len;
+%     
+%     ratios(i) = I2avg/Iavg;
+
+    % calculate the distance from the centre
     
-    I2avg = sum(I2(comp))/len;
-    Iavg = sum(I(comp))/len;
+    dist = ((s(i).Centroid(1)-centreX).^2 + (s(i).Centroid(2)-centreY).^2);
     
-    ratios(i) = I2avg/Iavg;
+    if dist < smallestDist
+        smallestDist = dist;
+        component = i;
+    end
+
 end
 
-% find the smallest element of ratios
+chosen = component;
 
-[~,chosen] = min(ratios);
+% 
+% % find the smallest element of ratios
+% 
+% [~,chosen] = min(ratios);
 
 % create an array of the non-chosen indices
 

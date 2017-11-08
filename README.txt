@@ -31,11 +31,31 @@ An average recovery curve across all the cells
 
 --------------------------------------
 
-Details:
-
-Checkbox options:
+Details of checkbox options:
 'Show individual recovery curves for each image set'
 	Default off
 	Will plot a recovery curve for each image
 
+'Calculate an average recovery curve'
+	Default on
+	Will plot an average recovery curve across all images
+
+'Account for drift'
+	Default on
+	Will track the cell so that the bleached region moves if the cell moves
+	Not recommended to turn off
+
+'Show a summary of the masks used and example images'
+	Default on
+	For each image set show the masks used for the bleached and whole cell regions
+	Will also show some example images pre-bleach and post-bleach
+	Recommended to leave on for at least the first time on a folder to ensure
+	all is working correctly
+
+'Show every mask used (not recommended)'
+	Default off
+	Will plot every single mask used at almost every stage in the code for 
+	each image set
+	If there are many image sets in a folder is prohibitively slow
+	Not recommended unless debugging
 

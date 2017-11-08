@@ -21,6 +21,7 @@ numImages = length(images);
 % create first pass mask for total cell
 
 disp('doing first pass for cell')
+figure;imshow(images{1},[min(images{1}(:)),max(images{1}(:))])
 
 [totalAllCells,bleached,~,drifts] = maskMaker3(images,detailYes); 
 % add nonbleached to this list if desire nonbleached region mask
@@ -40,8 +41,8 @@ totalAllCells = cleanup(totalAllCells);
 
 % create the mask for background region
 disp('creating mask for background')
-BGmask = imcomplement(totalAllCells);
-%[~,BGmask] = randomBG(images{1},total,totalAllCells);
+%BGmask = imcomplement(totalAllCells);
+[~,BGmask] = randomBG(images,total);
 
 % display all masks IF plot ==1
 
@@ -74,7 +75,8 @@ end
 
 totalDrifted = cell(numImages,1);
 bleachedDrifted = cell(numImages,1);
-BGDrifted = cell(numImages,1);
+BGDrifted = cell(numImages,1); % we do not drift this though
+% it has been chosen to coincide with no cells across the whole time frame
 
 if driftYes==1
     for i=1:numImages
@@ -85,7 +87,7 @@ if driftYes==1
         else
             totalDrifted{i} = imtranslate(total,drifts{i-2});
             bleachedDrifted{i} = imtranslate(bleached,drifts{i-2});
-            BGDrifted{i} = imtranslate(BGmask,drifts{i-2});
+            BGDrifted{i} = BGmask;
         end
     end
 else

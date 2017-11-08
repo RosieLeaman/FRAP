@@ -33,7 +33,7 @@ timestamps = zeros(FRAPsets,numImages);
 
 % determine how much information we want to display
 
-[plotRecoveryYes,averageRecoveryYes,driftYes,plotMasksYes,detailYes] = checkboxes()
+[plotRecoveryYes,averageRecoveryYes,driftYes,plotMasksYes,detailYes] = checkboxes();
 
 % plotMasksYes = 1; % plots a summary of masks for bleached and non-bleached regions
 % plotRecoveryYes = 1; % plots a recovery curve for each image set
@@ -50,17 +50,40 @@ for i=1:FRAPsets
     times = zeros(1,numImages);
     imageCount = 0;
     for j=1:length(fileList)
-        if strcmp(fileList(j).name(end-4),num2str(i)) 
+        fileEnd = [num2str(i),'.lsm']
+        if i < 10
+            fileList(j).name(end-5)
+            fileList(j).name(end-4:end)
+            strcmp(fileList(j).name(end-5),'-')
+            strcmp(fileList(j).name(end-4:end),fileEnd)
+            if strcmp(fileList(j).name(end-4:end),fileEnd)  && strcmp(fileList(j).name(end-5),'-')
+                % we've found a right file as the number in the filename
+                % matches the FRAP set number
+                disp(['Found a file for this set ',fileList(j).name])
+                disp('Reading in file\n')
+
+                T = tiffread([folder,'/',fileList(j).name]);
+
+                % for each frame in this image stack add it to the images and
+                % its timestamp too
+
+                for k=1:length(T)
+                    imageCount = imageCount + 1;
+                    images{imageCount} = T(k).data;
+                    times(imageCount) = T(k).lsm.TimeStamp(k);
+                end
+            end
+        elseif strcmp(fileList(j).name(end-5:end),fileEnd)
             % we've found a right file as the number in the filename
             % matches the FRAP set number
             disp(['Found a file for this set ',fileList(j).name])
             disp('Reading in file\n')
-            
+
             T = tiffread([folder,'/',fileList(j).name]);
-            
+
             % for each frame in this image stack add it to the images and
             % its timestamp too
-            
+
             for k=1:length(T)
                 imageCount = imageCount + 1;
                 images{imageCount} = T(k).data;
@@ -79,6 +102,7 @@ for i=1:FRAPsets
     sortedImages = images(ind);
 
     % now that the images are sorted we can do the FRAP!
+
     signals(i,:) = FRAP_main(sortedImages,sortedTimes,plotMasksYes,plotRecoveryYes,detailYes,driftYes);
     
     % make the times relative to the first time
@@ -88,8 +112,17 @@ for i=1:FRAPsets
     % save the timestamps too
     
     timestamps(i,:) = relTimes;
+    
+    if(plotRecoveryYes)
+        filename = [folder,'/recovery-',num2str(i),'.tif'];
+        print('-dtiff', '-r400', filename);
+    end
 end
 
+% save the data to a text file comma-separated
+
+dlmwrite([folder,'/times.txt'],timestamps)
+dlmwrite([folder,'/curves.txt'],signals)
 
 if(averageRecoveryYes)
     % calculate the average recovery curve and plot it
@@ -110,5 +143,9 @@ if(averageRecoveryYes)
     figure;plot(time,avg,'Linewidth',3);grid on;grid minor;set(gca,'FontSize',20);hold on
     %errorbar(preciseTimes(1:6),avgSignals(1:6),stdev(1:6),'kx','Linewidth',2); 
     xlabel('Time postbleach (s)');ylabel('Normalised intensity');
-    text(307,0.95,['n=',num2str(FRAPsets)],'FontSize',20,'Color','black');
+    text(250,0.95,['n=',num2str(FRAPsets)],'FontSize',20,'Color','black');
+    
+    filename = [folder,'/recovery-average.tif'];
+    print('-dtiff', '-r400', strcat(filename));
+    
 end
