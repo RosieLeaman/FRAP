@@ -23,7 +23,7 @@ numImages = length(images);
 disp('doing first pass for cell')
 figure;imshow(images{1},[min(images{1}(:)),max(images{1}(:))])
 
-[totalAllCells,bleached,~,drifts] = maskMaker3(images,detailYes); 
+[totalAllCells,bleached,~,drifts,thresh] = maskMaker3(images,detailYes); 
 % add nonbleached to this list if desire nonbleached region mask
 
 % check for multiple cells

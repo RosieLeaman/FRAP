@@ -1,24 +1,23 @@
 % this thresholds a GREYSCALE image and returns a binary version of the same size
-function BW = threshold2(image,postImage,detailYes)
+function [BW,thresh] = threshold2(image,postImage,detailYes)
 
 % do first threshold; this part is the same as threshold.m
 
 disp('calculating threshold')
 
-avg = mean(image(:)) % calculate avg intensity
+avg = mean(image(:)); % calculate avg intensity
 
-sd = std(double(image(:))) % SD of intensity (double cause type issues)
+sd = std(double(image(:))); % SD of intensity (double cause type issues)
 
 m = max(image(:)); % maximum intensity as we need a proportion
 m2 = 2^16; % potential max
 
-%thresh = (double(avg)+20*double(sd))/double(m2); % threshold
-%thresh = (double(avg)-0.25*double(sd))/double(m2); % threshold
+thresh = (double(avg)+20*double(sd))/double(m2); % threshold
+%thresh = (double(avg)+2*double(sd))/double(m2); % threshold
 
-%BW = imbinarize(image,thresh);
 
-%[BW,thresh] = imageFilterRT(image);
 BW = imbinarize(image);
+%BW = imbinarize(image,thresh);
 
 if(detailYes)
     figure;imshow(BW);title('first thresh')

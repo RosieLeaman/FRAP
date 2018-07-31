@@ -7,28 +7,26 @@
 % halo
 % produces similar results to maskMaker.m
 
-function [total,bleached,nonbleached,drifts] = maskMaker3(images,detailYes)
+function [total,bleached,nonbleached,drifts,thresh] = maskMaker3(images,detailYes)
 
 I = images{1};
 I2 = images{2};
 
+thresh = 0; % comment this out for GFP-TolA
+
 % extract mean + s.d. threshold from prebleach image
 disp('finding threshold for image 1 and binarising it')
-BW = threshold2(I,I2,detailYes);
 
+BW = threshold2(I,I2,detailYes); % usually use this
 
+%[BW,thresh] = threshold2(I,I2,detailYes); % but use this for tolA
 
-% find reduced threshold for second image
-%disp('finding threshold for image 2')
-% maxPre = double(mean(I(:)));
-% 
-% maxPost = double(mean(I2(:)));
-
-%thresh2 = thresh*(maxPost/maxPre);
+figure;imshow(BW);title('initial threshold')
 
 % threshold the second image to get nonbleached region
 
-nonbleached = imbinarize(I2);
+nonbleached = imbinarize(I2); %usually use this
+%nonbleached = imbinarize(I2,thresh); % use this for tolA?
 
 disp('Binarized image 2')
 
@@ -64,8 +62,8 @@ nonbleached = cleanup(nonbleached);
 
 if(detailYes)
     figure;imshow(BW);title('cell, post clean')
-    figure;imshow(bleached);title('nonbleached,postclean')
-    figure;imshow(nonbleached);title('bleached,postclean')
+    figure;imshow(bleached);title('bleached,postclean')
+    figure;imshow(nonbleached);title('nonbleached,postclean')
 end
 
 % find pixels in common between bleach and nonbleach mask
@@ -120,6 +118,7 @@ for i=3:length(images)
     disp(['Checking for drift in image ',num2str(i)]) 
     % threshold the image
     thresholded = imbinarize(images{i});
+    %thresholded = imbinarize(images{i},thresh);
     
     % cleanup the image quickly
     
@@ -171,7 +170,7 @@ for i=3:length(images)
     % calculate the centre of mass
     
     comp = bwconncomp(chosenMask);
-    centre = regionprops(comp,'Centroid')
+    centre = regionprops(comp,'Centroid');
     
     % calculate drift
     

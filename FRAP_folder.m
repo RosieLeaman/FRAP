@@ -50,12 +50,12 @@ for i=1:FRAPsets
     times = zeros(1,numImages);
     imageCount = 0;
     for j=1:length(fileList)
-        fileEnd = [num2str(i),'.lsm']
+        fileEnd = [num2str(i),'.lsm'];
         if i < 10
-            fileList(j).name(end-5)
-            fileList(j).name(end-4:end)
-            strcmp(fileList(j).name(end-5),'-')
-            strcmp(fileList(j).name(end-4:end),fileEnd)
+            %fileList(j).name(end-5)
+            %fileList(j).name(end-4:end)
+            %strcmp(fileList(j).name(end-5),'-')
+            %strcmp(fileList(j).name(end-4:end),fileEnd)
             if strcmp(fileList(j).name(end-4:end),fileEnd)  && strcmp(fileList(j).name(end-5),'-')
                 % we've found a right file as the number in the filename
                 % matches the FRAP set number
