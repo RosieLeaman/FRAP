@@ -1,8 +1,10 @@
 % takes in a BINARY image mask (the total cell mask), I the prebleach image
-% and I2, the first postbleach image
 % returns the same BINARY mask but with any cells in the picture that were not
-% FRAPed removed (set to zero)
-function [correct,pixels] = findCorrectCell(mask,I,I2)
+% the FRAPed cell removed from the mask (set to zero), and the pixels that
+% make up the correct cell. 
+% The `correct' cell is identified based on the cell which is closest to
+% the image centre in the prebleach image.
+function [correct,pixels] = findCorrectCell(mask,I)
 
 % first clean up the image
 [correct,n,CC] = cleanup(mask); 
@@ -19,14 +21,11 @@ end
 % NEW PLAN; find things closest to the centre
 % original plan; find the component that changes intensity the most
 % this breaks when there's a mobile background cell in the prebleach image
-%ratios = zeros(n,1);
 
 % find the centroids of the components
-
 s = regionprops(correct,'Centroid');
 
 % calculate image centre
-
 centreY = floor(size(I,1)/2);
 centreX = floor(size(I,2)/2);
 
@@ -35,17 +34,6 @@ component = 0;
 
 % if not then loop through the components
 for i=1:n
-%     % calculate the ratios of intensities between the initial greyscale
-%     % image and prebleach
-%     % the component with the smallest ratio is the FRAPed cell
-%     comp = CC.PixelIdxList{i};
-%     len = length(comp);
-%     
-%     I2avg = sum(I2(comp))/len;
-%     Iavg = sum(I(comp))/len;
-%     
-%     ratios(i) = I2avg/Iavg;
-
     % calculate the distance from the centre
     
     dist = ((s(i).Centroid(1)-centreX).^2 + (s(i).Centroid(2)-centreY).^2);
@@ -58,11 +46,6 @@ for i=1:n
 end
 
 chosen = component;
-
-% 
-% % find the smallest element of ratios
-% 
-% [~,chosen] = min(ratios);
 
 % create an array of the non-chosen indices
 
