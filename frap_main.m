@@ -21,7 +21,6 @@ numImages = length(images);
 % create first pass mask for total cell
 
 disp('doing first pass for cell')
-%figure;imshow(images{1},[min(images{1}(:)),max(images{1}(:))])
 
 [totalAllCells,bleached,~,drifts,thresh] = maskMaker3(images,detailYes); 
 % add nonbleached to this list if desire nonbleached region mask
