@@ -21,7 +21,7 @@ numImages = length(images);
 % create first pass mask for total cell
 
 disp('doing first pass for cell')
-figure;imshow(images{1},[min(images{1}(:)),max(images{1}(:))])
+%figure;imshow(images{1},[min(images{1}(:)),max(images{1}(:))])
 
 [totalAllCells,bleached,~,drifts,thresh] = maskMaker3(images,detailYes); 
 % add nonbleached to this list if desire nonbleached region mask
@@ -182,10 +182,22 @@ end
 
 % display
 if plotRecoveryYes == 1
-    figure;plot(timestamps,signal);
-    xlabel('Time');ylabel('Intensity');
-    hold on;scatter(timestamps,signal)
-    title('Recovery curve');
+    times = [0,1,2,3,4,60,120,300];
+    %figure;plot(timestamps,signal,'linewidth',2);
+    figure;plot(times,signal,'linewidth',2);
+    hold on;scatter(times,signal,'linewidth',2)
+    
+    xlabel('Time postbleach (s)');ylabel('Normalised Fluorescence Intensity (a.u.)');    
+    xticks([0,60,120,300])
+    
+    set(gca,'FontSize',16)
+    ax = gca;
+    ax.YGrid = 'on';
+
+    axis tight;
+    ylim([0,1])
+    
+    %title('Recovery curve');
 end
 
 % calculate the immobile fraction and output
