@@ -1,39 +1,37 @@
-% this function calculates a FRAP recovery curve.
-% it currently outputs nothing but the image.
-% inputs should be a CELL ARRAY of the images IN TIME ORDER
-% first image should be 1 prebleach, second should be first postbleach
-% timestamps should be an ARRAY of the time of each frame MUST HAVE SAME
-% LENGTH AS IMAGES
-% plot should be a BOOLEAN that is 1 if you want the masks used shown and zero
-% else
-
-% now has the added bonus of: double thresholding for a nicer looking image
-% and actually outputting the results
+% this function calculates a FRAP recovery curve from image data.
 
 % this function depends on several other .m files:
 % maskMaker3 (cleanup,findCorrectCell,threshold2), findCorrectCell (cleanup),
 % cleanup, subplot_tight,calcImmobile
 
-function [signal,immobile] = FRAP_main(images,timestamps,plotMasksYes,plotRecoveryYes,detailYes,driftYes)
+% INPUTS
+% images; a cell array of images in time order
+% plotMasksYes; 1 if the cell masks are to be shown, 0 if not
+% plotRecoveryYes; 1 if the recovery curve is to be shown, 0 if not
+% detailsYes; 1 to plot details of all masks used, 0 if not
+% driftYes; 1 to correct for drift over time, 0 if not
+
+% OUTPUTS
+% signal; the normalised recovery curve value at each time point
+% immobile; the immobile fraction
+
+function [signal,immobile] = FRAP_main(images,plotMasksYes,plotRecoveryYes,detailYes,driftYes)
 
 numImages = length(images);
 
 % create first pass mask for total cell
-
 disp('doing first pass for cell')
-
-[totalAllCells,bleached,~,drifts,thresh] = maskMaker3(images,detailYes); 
+[totalAllCells,bleached,~,drifts,~] = maskMaker3(images,detailYes); 
 % add nonbleached to this list if desire nonbleached region mask
 
 % check for multiple cells
-
 disp('checking for multiple cells and removing unwanted')
 total = findCorrectCell(totalAllCells,images{1},images{2});
 if(detailYes)
     figure;imshow(total);title('correct cell in frapv0_3')
 end
-% create background mask
 
+% create background mask
 % first clean up totalAllCells
 disp('cleaning up cells')
 totalAllCells = cleanup(totalAllCells);
@@ -43,8 +41,7 @@ disp('creating mask for background')
 %BGmask = imcomplement(totalAllCells);
 [~,BGmask] = randomBG(images,total);
 
-% display all masks IF plot ==1
-
+% display all masks IF plotMasksYes ==1
 if plotMasksYes==1
     disp('displaying masks to be used')
     figure;
@@ -53,7 +50,7 @@ if plotMasksYes==1
     subplot_tight(2,2,3,[0.1,0.1]);imshow(bleached);title('Bleached region');
     subplot_tight(2,2,4,[0.1,0.1]);imshow(BGmask);title('Background');
     
-    %bw = bwboundaries(bleached);
+    % this code makes the images in colour.
     blackImage = zeros(size(images{1}), 'uint8');
     rgbImage1 = cat(3, blackImage,images{1}, blackImage);
     figure;set(gcf,'Units','normal');set(gca,'Position',[0 0 1 1])
@@ -70,15 +67,16 @@ if plotMasksYes==1
     text(30,30,'5mins','Color','white','Fontsize',20);
 end
 
-% create the necessary drifted masks
-
+% corrections for drift over time occur here
 totalDrifted = cell(numImages,1);
 bleachedDrifted = cell(numImages,1);
-BGDrifted = cell(numImages,1); % we do not drift this though
-% it has been chosen to coincide with no cells across the whole time frame
+BGDrifted = cell(numImages,1); 
+% the background region does not drift, it has already been selected to
+% avoid cells across the whole time course
 
 if driftYes==1
     for i=1:numImages
+        % calculate how the mask for each region drifts over time
         if i==1 || i==2
             totalDrifted{i} = total;
             bleachedDrifted{i} = bleached;
@@ -90,25 +88,26 @@ if driftYes==1
         end
     end
 else
+    % if we are not correcting for drift, keep all masks the same over time
     for i=1:numImages
         totalDrifted{i} = total;
         bleachedDrifted{i} = bleached;
         BGDrifted{i} = BGmask;
     end
 end
+
 % at each time point (number images) calculate the avg T_t 
 %(total cell intensity) and I_t (bleached region intensity) and BG_t
 %(background region intensity)
 
 Tt = zeros(numImages,1); % this stores average in total cell at each timepoint
 
-% create the masked version of total cell region original image and average
+% create the masked version of total cell region from the original image
+% and average the fluorescence intensity
 T = cell(numImages,1);
 for i=1:numImages
-    
     % calculate the number of pixels in the cell from total
     % this will tell us how many to take the average over
-
     cellPixels = nnz(totalDrifted{i});
     
     T{i} = images{i}; % make a copy of the image
@@ -123,7 +122,6 @@ for i=1:numImages
 end
 
 % create masked version of the bleached region and average
-
 It = zeros(numImages,1); %stores averages in bleached region
 
 I = cell(numImages,1);
@@ -141,7 +139,6 @@ for i=1:numImages
 end
 
 % create masked version of background and average
-
 BGt = zeros(numImages,1); %stores averages in bleached region
 
 BG = cell(numImages,1);
@@ -158,31 +155,24 @@ for i=1:numImages
 end
 
 % subtract BG from all of these T'_t and I'_t
-
 Tt2 = Tt - BGt;
 
 It2 = It - BGt;
 
 % At each time point, calculate signal as (I'_t/I'_pre)*(T'_pre/T'_t)
-% double normalisation
-
-%signal = It2/It2(1);
+% double normalisation method
 
 signal = zeros(numImages,1);
 signal(1) = 1;
 
 for i=2:numImages
     signal(i) = (It2(i)/It2(1))*(Tt2(1)/Tt2(i));
-    %signal(i) = (It2(i));
 end
 
-%signal2 = (signal - signal(2))/(signal(1)-signal(2));
-%signal = signal2;
-
-% display
+% display if desired
 if plotRecoveryYes == 1
-    times = [0,1,2,3,4,60,120,300];
-    %figure;plot(timestamps,signal,'linewidth',2);
+    times = [0,1,2,3,4,60,120,300]; % use approximate times
+    
     figure;plot(times,signal,'linewidth',2);
     hold on;scatter(times,signal,'linewidth',2)
     
@@ -195,12 +185,9 @@ if plotRecoveryYes == 1
 
     axis tight;
     ylim([0,1])
-    
-    %title('Recovery curve');
 end
 
 % calculate the immobile fraction and output
-
 immobile = calcImmobile(signal);
 
 disp(['Immobile fraction: ',num2str(immobile)])
