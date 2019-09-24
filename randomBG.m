@@ -2,9 +2,9 @@
 % provided, checking that this doesn't overlap with any cells
 % BGmask is a BINARY image of the FRAPed cell
 % cellsMask is a BINARY image of all cells
-% will avoid any cell objects present in cellsMask
+% will avoid any cell objects present in the images
 
-function [avg,trans] = randomBG(images,BGmask,thresh)
+function [avg,trans] = randomBG(images,BGmask)
 % calculate image size
 avg = 'pointless';
 
@@ -22,7 +22,6 @@ for i=1:numImages
 end
 
 % loop until success OR too many tries
-
 success = 0;
 tries = 0;
 
@@ -31,20 +30,16 @@ maxOffsetY = floor(imageSizeY/2);
 
 while success == 0 && tries < 100
     % pick a random offset in x and y
-    
     x = randi([-maxOffsetX,maxOffsetX],1);
     y = randi([-maxOffsetY,maxOffsetY],1);
 
-    % move the mask
-    
+    % move the mask  
     trans = imtranslate(BGmask,[x,y]);
 
     % check if it fell off screen
-    
     s = sum(trans(:));
     
-    if s/numPixels > 0.99
-        
+    if s/numPixels > 0.99        
         miniSuccess = 0;
         for i=1:numImages
             % determine if it intersects with any cells
