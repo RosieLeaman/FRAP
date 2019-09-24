@@ -1,11 +1,21 @@
 % this function takes in two images and spits out binary masks for total
 % cell region, bleached cell region and nonbleached cell region.
-% I should be prebleach image, I2 first postbleach image.
 
 % this version instead of subtracting the grayscale it subtracts the mask
 % but uses a lower threshold for the second image so that it has less of a
 % halo
 % produces similar results to maskMaker.m
+
+% INPUTS
+% images; cell array containing each image in time order
+% detailYes; 1 to output all masks used, 0 if not (only for debugging)
+
+% OUTPUTS
+% total; binary image with the total cell region masked as 1
+% bleached; binary image with bleached cell region masked as 1
+% nonbleached; binary image with nonbleached cell region masked as 1
+% drifts; the drift corrections needed at each time point
+% thresh; the threshold used to obtain the binary image
 
 function [total,bleached,nonbleached,drifts,thresh] = maskMaker3(images,detailYes)
 
@@ -17,6 +27,7 @@ thresh = 0; % comment this out for GFP-TolA
 % extract mean + s.d. threshold from prebleach image
 disp('finding threshold for image 1 and binarising it')
 
+% binarize the image
 BW = threshold2(I,I2,detailYes); % usually use this
 
 %[BW,thresh] = threshold2(I,I2,detailYes); % but use this for tolA
@@ -24,24 +35,28 @@ BW = threshold2(I,I2,detailYes); % usually use this
 figure;imshow(BW);title('initial threshold')
 
 % threshold the second image to get nonbleached region
-
 nonbleached = imbinarize(I2); %usually use this
-%nonbleached = imbinarize(I2,thresh); % use this for tolA?
+%nonbleached = imbinarize(I2,thresh); % but use this for tolA
 
 disp('Binarized image 2')
 
 if(detailYes)
     figure;imshow(nonbleached);title('nonbleached')
 end
-% subtract the masks to produce bleached region
-% also multiply by correct cell to get rid of floaty background cells
+
+% find the cell which was photobleached
 correct = findCorrectCell(BW,I,I2);
 
 disp('Calculating bleached region')
 
+% subtract the nonbleached region from the total cell region to obtain the
+% bleached region
 bleached = BW - nonbleached;
-bleached(bleached < 0)=0;
+bleached(bleached < 0)=0; % check for slight shifts causing negative values
 bleached = logical(bleached);
+
+% multiply by the correct cell to get rid of incorrect cells in the
+% background
 bleached = bleached.*correct; 
 
 if(detailYes)
@@ -50,12 +65,10 @@ if(detailYes)
     figure;imshow(bleached);title('bleached,preclean')
 end
 
-% clean up all these
-
+% clean up all the image masks to remove small fuzzy dots
 disp('cleaning up the masks')
 
 bleached = cleanup(bleached);
-
 bleached = imfill(bleached,'holes');
 
 nonbleached = cleanup(nonbleached);
@@ -116,15 +129,13 @@ drifts = cell(1,(length(images)-3));
 
 for i=3:length(images)
     disp(['Checking for drift in image ',num2str(i)]) 
+    
     % threshold the image
     thresholded = imbinarize(images{i});
     %thresholded = imbinarize(images{i},thresh);
     
     % cleanup the image quickly
-    
     [thresholded,numCells,cells] = cleanup(thresholded);
-    
-    % pick the component that is our cell
     
     % first check how many cells there are, if there is only 1 we are
     % finished
@@ -133,7 +144,7 @@ for i=3:length(images)
         disp('Many cells! Have to find correct')
         % we have too many cells
     
-        chosenCell = 0;
+        %chosenCell = 0;
         chosenMask = 0;
         chosenCount = 0;
     
@@ -153,13 +164,13 @@ for i=3:length(images)
             
             if count > chosenCount
                 chosenCount = count;
-                chosenCell = k;
+                %chosenCell = k;
                 chosenMask = thisCell;
             end           
         end
    
     else
-        chosenCell = 1;
+        %chosenCell = 1;
         chosenMask = thresholded;
     end
     
@@ -167,13 +178,11 @@ for i=3:length(images)
         figure;imshow(chosenMask);title(['chosen',num2str(i)]);
     end
     
-    % calculate the centre of mass
-    
+    % calculate the centre of mass of the cell in the current image    
     comp = bwconncomp(chosenMask);
     centre = regionprops(comp,'Centroid');
     
-    % calculate drift
-    
+    % calculate drift by calculating the change in the centre of mass
     drifts{i-2} = centre.Centroid - centre0.Centroid;
     
 end
