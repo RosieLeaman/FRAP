@@ -1,5 +1,7 @@
 README for FRAP.m
 
+The files tiffread.m and subplot_tight.m were obtained from the MATLAB file exchange.
+
 Usage:
 Move the current MATLAB folder to the FRAP folder
 
